@@ -44,7 +44,7 @@ npm run preview
 npm run typecheck
 ```
 
-## 🎮 3D Ultra Cool Pool Rules
+## 🎮 Poker Pool Rules
 
 ### Game Overview
 
