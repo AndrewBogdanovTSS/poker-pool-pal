@@ -1,6 +1,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-
+  imports: {
+    dirs: ['types']
+  },
   modules: [
     '@unocss/nuxt',
     '@vueuse/nuxt',
