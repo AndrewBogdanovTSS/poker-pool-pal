@@ -233,14 +233,14 @@ const handleCreateRoom = async () => {
     currentRoom.value = room
 
     // Initialize WebRTC as host
-    const signalData = await createHost()
+    const hostPeerId = await createHost()
 
     // Create room offer for QR code
     roomOffer.value = {
       roomId: room.id,
       roomName: room.name,
       hostName: player.name,
-      signalData,
+      hostPeerId,
       timestamp: Date.now()
     }
 

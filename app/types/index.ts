@@ -53,7 +53,7 @@ export interface PokerHandResult {
   highCard: CardRank
 }
 
-export type PokerHandName = 
+export type PokerHandName =
   | 'Royal Flush'
   | 'Straight Flush'
   | 'Four of a Kind'
@@ -66,8 +66,8 @@ export type PokerHandName =
   | 'High Card'
 
 export interface WebRTCMessage {
-  type: 'player-joined' | 'player-left' | 'game-started' | 
-        'ball-pocketed' | 'hand-claimed' | 'round-ended' | 
+  type: 'player-joined' | 'player-left' | 'game-started' |
+        'ball-pocketed' | 'hand-claimed' | 'round-ended' |
         'new-rack' | 'game-state-update' | 'turn-ended'
   payload: any
   timestamp: number
@@ -78,7 +78,7 @@ export interface RoomOffer {
   roomId: string
   roomName: string
   hostName: string
-  signalData: any
+  hostPeerId: string
   timestamp: number
 }
 

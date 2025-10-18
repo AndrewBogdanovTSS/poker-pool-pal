@@ -258,7 +258,7 @@ const handleJoinRoom = async () => {
     setCurrentPlayer(player)
 
     // Join via WebRTC
-    const guestSignalData = await joinAsGuest(scannedOffer.value.signalData)
+    const guestSignalData = await joinAsGuest(scannedOffer.value.hostPeerId)
 
     // Navigate to room with signal data
     const signalParam = encodeURIComponent(JSON.stringify(guestSignalData))
