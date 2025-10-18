@@ -1,23 +1,22 @@
-import SimplePeer from 'simple-peer'
+import Peer from 'peerjs'
 
-// Check if we're in browser
 const isBrowser = typeof window !== 'undefined'
 
 export const useWebRTC = () => {
-  const peers = ref<Map<string, SimplePeer.Instance>>(new Map())
+  const peer = ref<Peer | null>(null)
+  const connections = ref<Map<string, any>>(new Map())
   const isConnected = ref(false)
-  const hostPeer = ref<SimplePeer.Instance | null>(null)
+  const myPeerId = ref<string>('')
 
-  const createHost = (): Promise<any> => {
+  const createHost = (): Promise<string> => {
     if (!isBrowser) {
       return Promise.reject(new Error('WebRTC only available in browser'))
     }
 
     return new Promise((resolve, reject) => {
       try {
-        const peer = new SimplePeer({
-          initiator: true,
-          trickle: false,
+        // Create peer with random ID
+        peer.value = new Peer({
           config: {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
@@ -26,119 +25,99 @@ export const useWebRTC = () => {
           }
         })
 
-        // Add timeout
-        const timeout = setTimeout(() => {
-          reject(new Error('WebRTC connection timeout'))
-        }, 10000)
-
-        peer.on('signal', (signalData) => {
-          clearTimeout(timeout)
-          resolve(signalData)
+        peer.value.on('open', (id) => {
+          myPeerId.value = id
+          console.log('Host peer ID:', id)
+          resolve(id) // Return peer ID instead of signal data
         })
 
-        peer.on('error', (err) => {
-          clearTimeout(timeout)
-          console.error('Host peer error:', err)
+        peer.value.on('connection', (conn) => {
+          setupConnection(conn)
+        })
+
+        peer.value.on('error', (err) => {
+          console.error('Peer error:', err)
           reject(err)
         })
-
-        hostPeer.value = peer
-        setupPeerListeners(peer, 'host')
       } catch (error) {
         reject(error)
       }
     })
   }
 
-  const joinAsGuest = (hostSignalData: any): Promise<any> => {
+  const joinAsGuest = (hostPeerId: string): Promise<void> => {
     return new Promise((resolve, reject) => {
-      const peer = new SimplePeer({
-        initiator: false,
-        trickle: false,
-        config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
-          ]
-        }
-      })
+      try {
+        peer.value = new Peer({
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        })
 
-      peer.on('signal', (signalData) => {
-        resolve(signalData)
-      })
+        peer.value.on('open', (id) => {
+          myPeerId.value = id
+          console.log('Guest peer ID:', id)
 
-      peer.on('error', (err) => {
-        console.error('Guest peer error:', err)
-        reject(err)
-      })
+          // Connect to host
+          const conn = peer.value!.connect(hostPeerId)
+          setupConnection(conn)
+          resolve()
+        })
 
-      peer.signal(hostSignalData)
-      hostPeer.value = peer
-      setupPeerListeners(peer, 'guest')
+        peer.value.on('error', (err) => {
+          console.error('Guest peer error:', err)
+          reject(err)
+        })
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 
-  const completeHostConnection = (guestSignalData: any, guestId: string) => {
-    if (hostPeer.value) {
-      hostPeer.value.signal(guestSignalData)
-      peers.value.set(guestId, hostPeer.value)
-    }
-  }
-
-  const setupPeerListeners = (peer: SimplePeer.Instance, role: string) => {
-    peer.on('connect', () => {
-      console.log(`${role} connected`)
+  const setupConnection = (conn: any) => {
+    conn.on('open', () => {
+      console.log('Connection established')
+      connections.value.set(conn.peer, conn)
       isConnected.value = true
     })
 
-    peer.on('data', (data) => {
-      try {
-        const message: WebRTCMessage = JSON.parse(data.toString())
-        handleIncomingMessage(message)
-      } catch (error) {
-        console.error('Failed to parse message:', error)
-      }
+    conn.on('data', (data: any) => {
+      handleIncomingMessage(data)
     })
 
-    peer.on('close', () => {
-      console.log(`${role} connection closed`)
-      isConnected.value = false
+    conn.on('close', () => {
+      console.log('Connection closed')
+      connections.value.delete(conn.peer)
+      isConnected.value = connections.value.size > 0
     })
   }
 
-  const handleIncomingMessage = (message: WebRTCMessage) => {
+  const handleIncomingMessage = (message: any) => {
     console.log('Received message:', message.type, message.payload)
-
     const { addPlayerToRoom, removePlayerFromRoom } = useRoom()
 
     switch (message.type) {
       case 'player-joined':
-        addPlayerToRoom(message.payload as Player)
+        addPlayerToRoom(message.payload)
         break
       case 'player-left':
         removePlayerFromRoom(message.payload.playerId)
         break
-      case 'game-state-update':
-        // Handle game state synchronization
-        break
     }
   }
 
-  const sendMessage = (message: WebRTCMessage) => {
-    const data = JSON.stringify(message)
-
-    if (hostPeer.value && hostPeer.value.connected) {
-      hostPeer.value.send(data)
-    }
-
-    peers.value.forEach((peer) => {
-      if (peer.connected) {
-        peer.send(data)
+  const sendMessage = (message: any) => {
+    connections.value.forEach((conn) => {
+      if (conn.open) {
+        conn.send(message)
       }
     })
   }
 
-  const broadcastPlayerJoined = (player: Player) => {
+  const broadcastPlayerJoined = (player: any) => {
     sendMessage({
       type: 'player-joined',
       payload: player,
@@ -168,21 +147,19 @@ export const useWebRTC = () => {
       })
     }
 
-    // Close all peer connections
-    hostPeer.value?.destroy()
-    peers.value.forEach(peer => peer.destroy())
+    connections.value.forEach(conn => conn.close())
+    peer.value?.destroy()
 
-    hostPeer.value = null
-    peers.value.clear()
+    peer.value = null
+    connections.value.clear()
     isConnected.value = false
   }
 
   return {
-    peers,
     isConnected,
+    myPeerId,
     createHost,
     joinAsGuest,
-    completeHostConnection,
     sendMessage,
     broadcastPlayerJoined,
     broadcastGameState,
