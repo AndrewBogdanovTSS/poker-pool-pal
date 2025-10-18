@@ -21,8 +21,12 @@ export const usePokerPool = () => {
   const shuffleDeck = (deck: Card[]): Card[] => {
     const shuffled = [...deck]
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      const j = Math.floor(Math.random() * (i + 1))
+
+      // TypeScript-safe swap using non-null assertions
+      const temp = shuffled[i]!  // ✅ Tell TS this is NOT undefined
+      shuffled[i] = shuffled[j]!
+      shuffled[j] = temp
     }
     return shuffled
   }
@@ -63,8 +67,12 @@ export const usePokerPool = () => {
   const shuffleBallPositions = (balls: Ball[]): Ball[] => {
     const shuffled = [...balls]
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      const j = Math.floor(Math.random() * (i + 1))
+
+      // TypeScript-safe swap
+      const temp = shuffled[i]!
+      shuffled[i] = shuffled[j]!
+      shuffled[j] = temp
     }
     // Reassign ball numbers
     return shuffled.map((ball, index) => ({
