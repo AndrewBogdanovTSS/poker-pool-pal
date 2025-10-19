@@ -16,7 +16,7 @@
           </button>
         </NuxtLink>
 
-        <NuxtLink to="/join-scan" class="block">
+        <NuxtLink to="/join" class="block">
           <button class="btn-secondary w-full text-lg py-4">
             <span class="text-2xl mr-2">📷</span>
             Join Game

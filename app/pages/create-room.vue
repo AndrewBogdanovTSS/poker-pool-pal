@@ -191,6 +191,27 @@
           </NuxtLink>
         </div>
       </div>
+      <!-- Shareable Link -->
+      <div class="mt-4 p-4 bg-white rounded-lg border border-primary-200">
+        <h4 class="text-sm font-bold text-gray-800 mb-2">Share Link</h4>
+        <div class="flex gap-2">
+          <input
+              :value="shareableLink"
+              readonly
+              class="input-field flex-1 text-sm font-mono"
+              @click="($event.target as HTMLInputElement).select()"
+          />
+          <button
+              @click="copyLink"
+              class="btn-primary px-4 whitespace-nowrap"
+          >
+            {{ linkCopied ? '✓ Copied!' : 'Copy' }}
+          </button>
+        </div>
+        <p class="text-xs text-gray-600 mt-2">
+          Players can scan the QR code or paste this link to join
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -278,6 +299,26 @@ const handleLeaveRoom = () => {
     clearCurrentPlayer()
 
     navigateTo('/')
+  }
+}
+
+const linkCopied = ref(false)
+
+const shareableLink = computed(() => {
+  if (!roomOffer.value) return ''
+
+  const baseUrl = window.location.origin
+  const offerData = encodeURIComponent(JSON.stringify(roomOffer.value))
+  return `${baseUrl}/join?offer=${offerData}`
+})
+
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(shareableLink.value)
+    linkCopied.value = true
+    setTimeout(() => linkCopied.value = false, 2000)
+  } catch (error) {
+    console.error('Failed to copy:', error)
   }
 }
 </script>
