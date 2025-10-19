@@ -240,7 +240,7 @@ const playerAvatars = ['🎯', '⚡', '🔥', '⭐', '💎', '🎮', '🎪', '�
 const roomAvatars = ['🎱', '🎯', '🎮', '🎪', '🎨', '🎭', '🎸', '⚡']
 
 const handleCreateRoom = async () => {
-  // const { saveRoom } = useSupabase()
+  const { saveRoom } = useSupabase()
   if (!playerName.value.trim() || !roomName.value.trim()) return
 
   creating.value = true
@@ -268,8 +268,7 @@ const handleCreateRoom = async () => {
 
     roomCreated.value = true
 
-    // Supabase persistence (temporarily disabled)
-    // await saveRoom(room)
+    await saveRoom(room)
 
     // Generate QR code
     await nextTick()

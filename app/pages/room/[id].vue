@@ -105,7 +105,7 @@ useHead({
 })
 
 const route = useRoute()
-// const { saveGameSession, updateRoom } = useSupabase()
+const { saveGameSession, updateRoom } = useSupabase()
 const { currentRoom } = useRoom()
 const { currentPlayer } = usePlayer()
 const { broadcastGameState } = useWebRTC()
@@ -246,16 +246,15 @@ const handleClaimHand = () => {
 
   addLog(`${currentPlayer.value.name} wins with ${bestHand.value.name}!`)
 
-  // Supabase persistence (temporarily disabled)
-  // if (currentRoom.value) {
-  //   saveGameSession({
-  //     room_id: currentRoom.value.id,
-  //     winner_id: currentPlayer.value.id,
-  //     winner_hand: bestHand.value,
-  //     players: currentRoom.value.players,
-  //     final_state: currentRoom.value.gameState
-  //   })
-  // }
+  if (currentRoom.value) {
+    saveGameSession({
+      room_id: currentRoom.value.id,
+      winner_id: currentPlayer.value.id,
+      winner_hand: bestHand.value,
+      players: currentRoom.value.players,
+      final_state: currentRoom.value.gameState
+    })
+  }
 
   broadcastGameState(currentRoom.value.gameState)
 }
