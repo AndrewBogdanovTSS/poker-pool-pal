@@ -142,16 +142,16 @@ const getHandEmoji = (handName: PokerHandName): string => {
 const getHandGradient = (handName: PokerHandName): string => {
   const score = POKER_HAND_SCORES[handName]
   if (score >= 9) return 'bg-gradient-to-r from-yellow-100 to-yellow-200 border-2 border-yellow-400'
-  if (score >= 7) return 'bg-gradient-to-r from-purple-100 to-purple-200 border-2 border-purple-400'
-  if (score >= 5) return 'bg-gradient-to-r from-blue-100 to-blue-200 border-2 border-blue-400'
+  if (score >= 7) return 'bg-gradient-to-r from-primary-100 to-primary-200 border-2 border-primary-400'
+  if (score >= 5) return 'bg-gradient-to-r from-primary-50 to-primary-100 border-2 border-primary-300'
   return 'bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-400'
 }
 
 const getHandTextColor = (handName: PokerHandName): string => {
   const score = POKER_HAND_SCORES[handName]
   if (score >= 9) return 'text-yellow-800'
-  if (score >= 7) return 'text-purple-800'
-  if (score >= 5) return 'text-blue-800'
+  if (score >= 7) return 'text-primary-800'
+  if (score >= 5) return 'text-primary-700'
   return 'text-gray-800'
 }
 </script>

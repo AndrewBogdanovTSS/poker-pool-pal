@@ -31,14 +31,16 @@ export default defineNuxtConfig({
       start_url: '/',
       icons: [
         {
-          src: '/icons/icon-192.png',
+          src: '/icons/icon.svg',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/svg+xml',
+          purpose: 'any'
         },
         {
-          src: '/icons/icon-512.png',
+          src: '/icons/icon.svg',
           sizes: '512x512',
-          type: 'image/png'
+          type: 'image/svg+xml',
+          purpose: 'any'
         }
       ]
     },
@@ -59,6 +61,13 @@ export default defineNuxtConfig({
         { name: 'description', content: '3D Ultra Cool Pool' },
         { name: 'theme-color', content: '#0f766e' }
       ]
+    }
+  },
+
+  runtimeConfig: {
+    public: {
+      supabaseUrl: process.env.VITE_SUPABASE_URL,
+      supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY
     }
   }
 })

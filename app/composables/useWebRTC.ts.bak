@@ -97,7 +97,7 @@ export const useWebRTC = () => {
 
   const handleIncomingMessage = (message: any) => {
     console.log('Received message:', message.type, message.payload)
-    const { currentRoom, addPlayerToRoom, removePlayerFromRoom } = useRoom()
+    const { addPlayerToRoom, removePlayerFromRoom } = useRoom()
 
     switch (message.type) {
       case 'player-joined':
@@ -105,34 +105,6 @@ export const useWebRTC = () => {
         break
       case 'player-left':
         removePlayerFromRoom(message.payload.playerId)
-        break
-      case 'game-started':
-      case 'game-state-update':
-      case 'ball-pocketed':
-      case 'hand-claimed':
-      case 'new-rack':
-      case 'turn-ended':
-        if (currentRoom.value && message.payload) {
-          if (message.payload.deck) currentRoom.value.gameState.deck = message.payload.deck
-          if (message.payload.balls) currentRoom.value.gameState.balls = message.payload.balls
-          if (message.payload.phase) currentRoom.value.gameState.phase = message.payload.phase
-          if (message.payload.currentPlayerId !== undefined) {
-            currentRoom.value.gameState.currentPlayerId = message.payload.currentPlayerId
-          }
-          if (message.payload.rackNumber) currentRoom.value.gameState.rackNumber = message.payload.rackNumber
-          if (message.payload.deckPosition !== undefined) {
-            currentRoom.value.gameState.deckPosition = message.payload.deckPosition
-          }
-          if (message.payload.lastWinnerId) currentRoom.value.gameState.lastWinnerId = message.payload.lastWinnerId
-          if (message.payload.players) currentRoom.value.players = message.payload.players
-        }
-        break
-      case 'round-ended':
-        if (currentRoom.value && message.payload) {
-          currentRoom.value.gameState.phase = 'round-ended'
-          if (message.payload.winnerId) currentRoom.value.gameState.lastWinnerId = message.payload.winnerId
-          if (message.payload.players) currentRoom.value.players = message.payload.players
-        }
         break
     }
   }
