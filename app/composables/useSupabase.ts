@@ -1,33 +1,34 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+let supabaseClient: any = null
 
-let supabaseClient: SupabaseClient | null = null
+const getSupabaseClient = async () => {
+  if (supabaseClient) return supabaseClient
 
-export const useSupabase = () => {
-  const config = useRuntimeConfig()
-
-  if (!supabaseClient) {
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const config = useRuntimeConfig()
     const supabaseUrl = config.public.supabaseUrl as string
     const supabaseKey = config.public.supabaseAnonKey as string
 
     if (!supabaseUrl || !supabaseKey) {
       console.warn('Supabase credentials not configured')
-      return {
-        client: null,
-        saveRoom: async () => null,
-        loadRoom: async () => null,
-        updateRoom: async () => null,
-        saveGameSession: async () => null,
-        listActiveSessions: async () => []
-      }
+      return null
     }
 
     supabaseClient = createClient(supabaseUrl, supabaseKey)
+    return supabaseClient
+  } catch (error) {
+    console.warn('Supabase not available:', error)
+    return null
   }
+}
+
+export const useSupabase = () => {
 
   const saveRoom = async (room: Room) => {
-    if (!supabaseClient) return null
+    const client = await getSupabaseClient()
+    if (!client) return null
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('rooms')
       .upsert({
         id: room.id,
@@ -51,9 +52,10 @@ export const useSupabase = () => {
   }
 
   const loadRoom = async (roomId: string) => {
-    if (!supabaseClient) return null
+    const client = await getSupabaseClient()
+    if (!client) return null
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('rooms')
       .select('*')
       .eq('id', roomId)
@@ -78,7 +80,8 @@ export const useSupabase = () => {
   }
 
   const updateRoom = async (roomId: string, updates: Partial<Room>) => {
-    if (!supabaseClient) return null
+    const client = await getSupabaseClient()
+    if (!client) return null
 
     const updateData: any = {
       updated_at: new Date().toISOString()
@@ -89,7 +92,7 @@ export const useSupabase = () => {
     if (updates.players) updateData.players = updates.players
     if (updates.gameState) updateData.game_state = updates.gameState
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('rooms')
       .update(updateData)
       .eq('id', roomId)
@@ -111,9 +114,10 @@ export const useSupabase = () => {
     players: Player[]
     final_state: GameState
   }) => {
-    if (!supabaseClient) return null
+    const client = await getSupabaseClient()
+    if (!client) return null
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('game_sessions')
       .insert({
         ...session,
@@ -131,9 +135,10 @@ export const useSupabase = () => {
   }
 
   const listActiveSessions = async (limit = 10) => {
-    if (!supabaseClient) return []
+    const client = await getSupabaseClient()
+    if (!client) return []
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await client
       .from('rooms')
       .select('id, name, avatar, players, created_at')
       .order('updated_at', { ascending: false })
@@ -148,7 +153,7 @@ export const useSupabase = () => {
   }
 
   return {
-    client: supabaseClient,
+    client: null,
     saveRoom,
     loadRoom,
     updateRoom,
