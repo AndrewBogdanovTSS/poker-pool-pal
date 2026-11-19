@@ -28,7 +28,8 @@
     "@types/qrcode": "^1.5.5",
     "@unocss/nuxt": "^66.5.4",
     "@vite-pwa/nuxt": "^1.0.7",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vue-tsc": "~3.3.14"
   },
   "volta": {
     "node": "22.20.0",
