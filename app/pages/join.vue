@@ -227,14 +227,14 @@ const startScanning = async () => {
     codeReader = new BrowserQRCodeReader()
     const videoInputDevices = await codeReader.listVideoInputDevices()
 
-    if (videoInputDevices.length === 0) {
-      error.value = 'No camera found'
-      return
-    }
-
     const selectedDevice = videoInputDevices.find(device =>
       device.label.toLowerCase().includes('back')
     ) || videoInputDevices[0]
+
+    if (!selectedDevice) {
+      error.value = 'No camera found'
+      return
+    }
 
     scanning.value = true
 

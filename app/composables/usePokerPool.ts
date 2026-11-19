@@ -38,11 +38,10 @@ export const usePokerPool = () => {
 
     // Take 15 cards from the deck
     for (let i = 1; i <= 15; i++) {
-      if (currentPosition >= deck.length) {
+      const card = deck[currentPosition]
+      if (!card) {
         throw new Error('Deck exhausted')
       }
-
-      const card = deck[currentPosition]
       currentPosition++
 
       // First 12 balls are open, last 3 are hidden
@@ -141,8 +140,9 @@ export const usePokerPool = () => {
         return
       }
 
-      for (let i = start; i < array.length; i++) {
-        combo.push(array[i])
+      for (const [i, item] of array.entries()) {
+        if (i < start) continue
+        combo.push(item)
         combine(i + 1, combo)
         combo.pop()
       }
@@ -158,6 +158,10 @@ export const usePokerPool = () => {
     )
 
     const ranks = sortedCards.map(c => c.rank)
+    const topRank = ranks[0]
+    if (!topRank) {
+      throw new Error('evaluateFiveCardHand requires 5 cards')
+    }
     const suits = sortedCards.map(c => c.suit)
     const values = ranks.map(r => CARD_VALUES[r])
 
@@ -181,7 +185,7 @@ export const usePokerPool = () => {
         name: 'Straight Flush',
         cards: sortedCards,
         score: POKER_HAND_SCORES['Straight Flush'],
-        highCard: ranks[0]
+        highCard: topRank
       }
     }
 
@@ -215,7 +219,7 @@ export const usePokerPool = () => {
         name: 'Flush',
         cards: sortedCards,
         score: POKER_HAND_SCORES['Flush'],
-        highCard: ranks[0]
+        highCard: topRank
       }
     }
 
@@ -225,7 +229,7 @@ export const usePokerPool = () => {
         name: 'Straight',
         cards: sortedCards,
         score: POKER_HAND_SCORES['Straight'],
-        highCard: ranks[0]
+        highCard: topRank
       }
     }
 
@@ -255,12 +259,13 @@ export const usePokerPool = () => {
     }
 
     // Pair
-    if (pairs.length === 1) {
+    const [onlyPair] = pairs
+    if (pairs.length === 1 && onlyPair) {
       return {
         name: 'Pair',
         cards: sortedCards,
         score: POKER_HAND_SCORES['Pair'],
-        highCard: pairs[0][0] as CardRank
+        highCard: onlyPair[0] as CardRank
       }
     }
 
@@ -269,7 +274,7 @@ export const usePokerPool = () => {
       name: 'High Card',
       cards: sortedCards,
       score: POKER_HAND_SCORES['High Card'],
-      highCard: ranks[0]
+      highCard: topRank
     }
   }
 
@@ -277,13 +282,10 @@ export const usePokerPool = () => {
     const sorted = [...values].sort((a, b) => b - a)
 
     // Check regular straight
-    let isConsecutive = true
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (sorted[i] - sorted[i + 1] !== 1) {
-        isConsecutive = false
-        break
-      }
-    }
+    const isConsecutive = sorted.every((value, i) => {
+      const next = sorted[i + 1]
+      return next === undefined || value - next === 1
+    })
 
     if (isConsecutive) return true
 

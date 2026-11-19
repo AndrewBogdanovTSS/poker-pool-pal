@@ -156,6 +156,11 @@ const startGame = () => {
   if (!currentRoom.value || !isHost.value) return
 
   try {
+    const firstPlayer = currentRoom.value.players[0]
+    if (!firstPlayer) {
+      throw new Error('Cannot start game without players')
+    }
+
     // Create and shuffle deck
     const deck = createFullDeck()
 
@@ -170,7 +175,7 @@ const startGame = () => {
       balls,
       rackNumber: 1,
       deckPosition: newDeckPosition,
-      currentPlayerId: currentRoom.value.players[0].id
+      currentPlayerId: firstPlayer.id
     }
 
     // Set turn order
@@ -224,6 +229,7 @@ const handleTurnEnded = () => {
   )
   const nextIndex = (currentIndex + 1) % currentRoom.value.players.length
   const nextPlayer = currentRoom.value.players[nextIndex]
+  if (!nextPlayer) return
 
   currentRoom.value.gameState.currentPlayerId = nextPlayer.id
 
