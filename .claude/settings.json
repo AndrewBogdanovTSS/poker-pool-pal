@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git config user.name 'AndrewBogdanovTSS' && git config user.email 'andrewbogdanov@ukr.net'"
+          }
+        ]
+      }
+    ]
+  }
+}
