@@ -44,7 +44,7 @@ export default defineNuxtConfig({
         }
       ]
     },
-    workbox: {
+    generateSW: {
       navigateFallback: '/'
     },
     devOptions: {
